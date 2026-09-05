@@ -1,5 +1,208 @@
-<!-- ... existing code ... -->
-        <!-- Add/Edit Task Modal -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظم المهام الجامعية الذكي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Cairo', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300 flex flex-col">
+
+    <!-- Startup Motivation Modal -->
+    <div id="startup-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl text-center relative overflow-hidden">
+            <div class="absolute -top-12 -left-12 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
+            <div class="absolute -bottom-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl"></div>
+            
+            <div class="w-16 h-16 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl shadow-inner">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            
+            <span class="inline-block px-3 py-1 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 text-xs font-bold rounded-full mb-3">إضاءة إدارية لتشغيل اليوم</span>
+            <h3 id="startup-quote-title" class="text-lg font-bold mb-2">طاقة إيجابية لتبدأ يومك الجامعي!</h3>
+            <p id="startup-quote-text" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6">تنظيم وقتك الجامعي اليوم يعني استثماراً حقيقياً في مستقبلك المهني. لا تؤجل عمل اليوم إلى الغد!</p>
+            
+            <button onclick="closeStartupModal()" class="w-full py-3.5 px-6 rounded-2xl font-bold text-xs bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25 transition-all">
+                ابدأ يومك بنشاط
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 left-5 z-50 transform translate-y-32 opacity-0 transition-all duration-300 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-lg"></i>
+        <span id="toast-message">تمت العملية بنجاح</span>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-lg shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-extrabold tracking-tight">منظم المهام الجامعية الذكي</h1>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">إدارة وجدولة مهامك ومقرراتك الأكاديمية</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="openTaskModal()" class="px-4 sm:px-5 py-2.5 rounded-2xl font-bold text-xs bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span class="hidden sm:inline">إضافة مهمة جديدة</span>
+                </button>
+                <button onclick="toggleTheme()" class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center" title="تغيير المظهر">
+                    <i id="theme-icon" class="fa-solid fa-moon"></i>
+                </button>
+                <button onclick="resetData()" class="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 transition-all flex items-center justify-center" title="إعادة ضبط البيانات">
+                    <i class="fa-solid fa-rotate-right text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Application Body -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+        
+        <!-- Dashboard Statistics Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400">إجمالي المهام</span>
+                    <div class="w-9 h-9 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                </div>
+                <div id="stat-total" class="text-2xl font-black">0</div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400">قيد التنفيذ</span>
+                    <div class="w-9 h-9 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-hourglass-start"></i>
+                    </div>
+                </div>
+                <div id="stat-pending" class="text-2xl font-black">0</div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400">المهام المكتملة</span>
+                    <div class="w-9 h-9 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                </div>
+                <div id="stat-completed" class="text-2xl font-black">0</div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400">مهام متأخرة</span>
+                    <div class="w-9 h-9 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                </div>
+                <div id="stat-overdue" class="text-2xl font-black">0</div>
+            </div>
+        </div>
+
+        <!-- Progress Overview & Dynamic Motivation Banner -->
+        <div class="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-500/10 relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+                <div class="space-y-2 max-w-xl">
+                    <span class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[11px] font-bold">مؤشر التقدم الأكاديمي</span>
+                    <h2 class="text-xl sm:text-2xl font-black">إنجازك الدراسي لهذا الأسبوع</h2>
+                    <p id="dynamic-motivation-text" class="text-xs sm:text-sm text-indigo-100 leading-relaxed">أنجز مهامك الدراسية أولاً بأول لتحقق أعلى الدرجات والتفوق!</p>
+                </div>
+
+                <div class="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-5 min-w-[260px] space-y-3">
+                    <div class="flex items-center justify-between text-xs font-bold">
+                        <span>نسبة الإنجاز الإجمالية</span>
+                        <span id="progress-percentage">0%</span>
+                    </div>
+                    <div class="w-full bg-black/20 rounded-full h-3 overflow-hidden">
+                        <div id="progress-bar" class="bg-emerald-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters & Search Toolbar -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0">
+                <button onclick="setFilter('all')" id="filter-all" class="px-5 py-2.5 rounded-2xl font-bold text-xs transition-all bg-indigo-600 text-white shadow-md shadow-indigo-500/20 whitespace-nowrap">الكل</button>
+                <button onclick="setFilter('pending')" id="filter-pending" class="px-5 py-2.5 rounded-2xl font-bold text-xs transition-all bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap">قيد التنفيذ</button>
+                <button onclick="setFilter('completed')" id="filter-completed" class="px-5 py-2.5 rounded-2xl font-bold text-xs transition-all bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap">المكتملة</button>
+                <button onclick="setFilter('urgent')" id="filter-urgent" class="px-5 py-2.5 rounded-2xl font-bold text-xs transition-all bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap">عالية الأهمية</button>
+            </div>
+
+            <div class="w-full sm:w-72 relative">
+                <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" id="search-input" oninput="renderTasks()" placeholder="ابحث عن مهمة أو مساق دراسي..." class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-2.5 pr-11 pl-4 text-xs font-semibold focus:outline-none focus:border-indigo-500 transition-all shadow-sm">
+            </div>
+        </div>
+
+        <!-- Tasks Grid -->
+        <div id="tasks-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Dynamically rendered tasks will appear here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden flex-col items-center justify-center py-16 px-4 text-center bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl">
+            <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-2xl flex items-center justify-center text-2xl mb-4">
+                <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <h3 class="text-base font-bold mb-1">لا توجد مهام دراسية حالياً</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mb-6">ابدأ بإضافة واجباتك أو اختباراتك الجامعية لتنظيم جدولك الزمني بكفاءة عالية.</p>
+            <button onclick="openTaskModal()" class="px-6 py-3 rounded-2xl font-bold text-xs bg-indigo-600 text-white shadow-lg shadow-indigo-500/25 transition-all">إضافة مهمة جديدة الآن</button>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto border-t border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+        <p>منظم المهام الجامعية الذكي © 2026 - جميع الحقوق محفوظة لطلبة الجامعات الطموحين 🎓</p>
+    </footer>
+
+    <!-- Add/Edit Task Modal -->
     <div id="task-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 transition-all duration-300">
         <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-100 dark:border-slate-800">
@@ -139,10 +342,12 @@
 
         function closeStartupModal() {
             const modal = document.getElementById('startup-modal');
-            modal.classList.add('opacity-0');
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 300);
+            if (modal) {
+                modal.classList.add('opacity-0');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300);
+            }
         }
 
         function toggleTheme() {
@@ -151,19 +356,20 @@
             if (html.classList.contains('dark')) {
                 html.classList.remove('dark');
                 html.classList.add('light');
-                icon.className = 'fa-solid fa-moon';
+                if (icon) icon.className = 'fa-solid fa-moon';
                 localStorage.setItem('uni_theme', 'light');
             } else {
                 html.classList.remove('light');
                 html.classList.add('dark');
-                icon.className = 'fa-solid fa-sun';
+                if (icon) icon.className = 'fa-solid fa-sun';
                 localStorage.setItem('uni_theme', 'dark');
             }
         }
 
         if (localStorage.getItem('uni_theme') === 'dark' || (!localStorage.getItem('uni_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
-            document.getElementById('theme-icon').className = 'fa-solid fa-sun';
+            const icon = document.getElementById('theme-icon');
+            if (icon) icon.className = 'fa-solid fa-sun';
         }
 
         function handleFileSelect(event) {
@@ -175,8 +381,10 @@
                         name: file.name,
                         data: e.target.result
                     };
-                    document.getElementById('file-name-display').innerText = file.name;
-                    document.getElementById('remove-file-btn').classList.remove('hidden');
+                    const nameDisplay = document.getElementById('file-name-display');
+                    const removeBtn = document.getElementById('remove-file-btn');
+                    if (nameDisplay) nameDisplay.innerText = file.name;
+                    if (removeBtn) removeBtn.classList.remove('hidden');
                 };
                 reader.readAsDataURL(file);
             }
@@ -184,65 +392,94 @@
 
         function removeAttachedFile() {
             tempAttachedFile = { name: null, data: null };
-            document.getElementById('task-file-input').value = '';
-            document.getElementById('file-name-display').innerText = 'لم يتم اختيار ملف';
-            document.getElementById('remove-file-btn').classList.add('hidden');
+            const fileInput = document.getElementById('task-file-input');
+            const nameDisplay = document.getElementById('file-name-display');
+            const removeBtn = document.getElementById('remove-file-btn');
+            if (fileInput) fileInput.value = '';
+            if (nameDisplay) nameDisplay.innerText = 'لم يتم اختيار ملف';
+            if (removeBtn) removeBtn.classList.add('hidden');
         }
 
         function openTaskModal(taskId = null) {
             const modal = document.getElementById('task-modal');
+            if (!modal) return;
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.remove('opacity-0'), 10);
             
             tempAttachedFile = { name: null, data: null };
-            document.getElementById('task-file-input').value = '';
-            document.getElementById('file-name-display').innerText = 'لم يتم اختيار ملف';
-            document.getElementById('remove-file-btn').classList.add('hidden');
+            const fileInput = document.getElementById('task-file-input');
+            const nameDisplay = document.getElementById('file-name-display');
+            const removeBtn = document.getElementById('remove-file-btn');
+            if (fileInput) fileInput.value = '';
+            if (nameDisplay) nameDisplay.innerText = 'لم يتم اختيار ملف';
+            if (removeBtn) removeBtn.classList.add('hidden');
+
+            const modalTitle = document.getElementById('modal-title');
+            const taskIdEl = document.getElementById('task-id');
+            const taskTitleEl = document.getElementById('task-title');
+            const taskSubjectEl = document.getElementById('task-subject');
+            const taskPriorityEl = document.getElementById('task-priority');
+            const taskStartEl = document.getElementById('task-start');
+            const taskEndEl = document.getElementById('task-end');
+            const taskNotesEl = document.getElementById('task-notes');
 
             if (taskId) {
-                document.getElementById('modal-title').innerText = 'تعديل المهمة الدراسية';
+                if (modalTitle) modalTitle.innerText = 'تعديل المهمة الدراسية';
                 const task = tasks.find(t => t.id === taskId);
                 if (task) {
-                    document.getElementById('task-id').value = task.id;
-                    document.getElementById('task-title').value = task.title;
-                    document.getElementById('task-subject').value = task.subject;
-                    document.getElementById('task-priority').value = task.priority;
-                    document.getElementById('task-start').value = task.start;
-                    document.getElementById('task-end').value = task.end;
-                    document.getElementById('task-notes').value = task.notes || '';
+                    if (taskIdEl) taskIdEl.value = task.id;
+                    if (taskTitleEl) taskTitleEl.value = task.title;
+                    if (taskSubjectEl) taskSubjectEl.value = task.subject;
+                    if (taskPriorityEl) taskPriorityEl.value = task.priority;
+                    if (taskStartEl) taskStartEl.value = task.start;
+                    if (taskEndEl) taskEndEl.value = task.end;
+                    if (taskNotesEl) taskNotesEl.value = task.notes || '';
                     if (task.fileName) {
                         tempAttachedFile = { name: task.fileName, data: task.fileData };
-                        document.getElementById('file-name-display').innerText = task.fileName;
-                        document.getElementById('remove-file-btn').classList.remove('hidden');
+                        if (nameDisplay) nameDisplay.innerText = task.fileName;
+                        if (removeBtn) removeBtn.classList.remove('hidden');
                     }
                 }
             } else {
-                document.getElementById('modal-title').innerText = 'إضافة مهمة دراسية جديدة';
-                document.getElementById('task-form').reset();
-                document.getElementById('task-id').value = '';
+                if (modalTitle) modalTitle.innerText = 'إضافة مهمة دراسية جديدة';
+                const form = document.getElementById('task-form');
+                if (form) form.reset();
+                if (taskIdEl) taskIdEl.value = '';
                 const now = new Date();
                 now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-                document.getElementById('task-start').value = now.toISOString().slice(0,16);
+                if (taskStartEl) taskStartEl.value = now.toISOString().slice(0,16);
             }
         }
 
         function closeTaskModal() {
             const modal = document.getElementById('task-modal');
-            modal.classList.add('opacity-0');
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 300);
+            if (modal) {
+                modal.classList.add('opacity-0');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300);
+            }
         }
 
         function saveTask(e) {
             e.preventDefault();
-            const id = document.getElementById('task-id').value;
-            const title = document.getElementById('task-title').value;
-            const subject = document.getElementById('task-subject').value;
-            const priority = document.getElementById('task-priority').value;
-            const start = document.getElementById('task-start').value;
-            const end = document.getElementById('task-end').value;
-            const notes = document.getElementById('task-notes').value;
+            const taskIdEl = document.getElementById('task-id');
+            const taskTitleEl = document.getElementById('task-title');
+            const taskSubjectEl = document.getElementById('task-subject');
+            const taskPriorityEl = document.getElementById('task-priority');
+            const taskStartEl = document.getElementById('task-start');
+            const taskEndEl = document.getElementById('task-end');
+            const taskNotesEl = document.getElementById('task-notes');
+
+            if (!taskTitleEl || !taskSubjectEl || !taskStartEl || !taskEndEl) return;
+
+            const id = taskIdEl.value;
+            const title = taskTitleEl.value;
+            const subject = taskSubjectEl.value;
+            const priority = taskPriorityEl.value;
+            const start = taskStartEl.value;
+            const end = taskEndEl.value;
+            const notes = taskNotesEl ? taskNotesEl.value : '';
 
             if (new Date(end) <= new Date(start)) {
                 showToast('تاريخ النهاية يجب أن يكون بعد تاريخ البدء!', 'error');
@@ -334,10 +571,12 @@
             currentFilter = filter;
             ['all', 'pending', 'completed', 'urgent'].forEach(f => {
                 const btn = document.getElementById(`filter-${f}`);
-                if (f === filter) {
-                    btn.className = 'px-5 py-2.5 rounded-2xl font-bold text-xs transition-all bg-indigo-600 text-white shadow-md shadow-indigo-500/20 whitespace-nowrap';
-                } else {
-                    btn.className = 'px-5 py-2.5 rounded-2xl font-bold text-xs transition-all bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap';
+                if (btn) {
+                    if (f === filter) {
+                        btn.className = 'px-5 py-2.5 rounded-2xl font-bold text-xs transition-all bg-indigo-600 text-white shadow-md shadow-indigo-500/20 whitespace-nowrap';
+                    } else {
+                        btn.className = 'px-5 py-2.5 rounded-2xl font-bold text-xs transition-all bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap';
+                    }
                 }
             });
             renderTasks();
@@ -346,7 +585,11 @@
         function renderTasks() {
             const container = document.getElementById('tasks-container');
             const emptyState = document.getElementById('empty-state');
-            const searchQuery = document.getElementById('search-input').value.toLowerCase();
+            const searchInput = document.getElementById('search-input');
+            
+            if (!container) return;
+
+            const searchQuery = searchInput ? searchInput.value.toLowerCase() : '';
 
             let filtered = tasks.filter(t => {
                 const matchesSearch = t.title.toLowerCase().includes(searchQuery) || t.subject.toLowerCase().includes(searchQuery);
@@ -366,10 +609,10 @@
             container.innerHTML = '';
 
             if (filtered.length === 0) {
-                emptyState.style.display = 'flex';
+                if (emptyState) emptyState.style.display = 'flex';
                 return;
             } else {
-                emptyState.style.display = 'none';
+                if (emptyState) emptyState.style.display = 'none';
             }
 
             const now = new Date();
@@ -391,7 +634,7 @@
 
                 let fileBadge = '';
                 if (task.fileName && task.fileData) {
-                    fileBadge = `<a href="${task.fileData}" download="${task.fileName}" class="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 text-indigo-600 dark:text-indigo-400 text-[11px] font-bold rounded-xl transition-all" title="تحميل الملف المرفق">
+                    fileBadge = `<a href="${task.fileData}" download="${escapeHtml(task.fileName)}" class="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 text-indigo-600 dark:text-indigo-400 text-[11px] font-bold rounded-xl transition-all" title="تحميل الملف المرفق">
                         <i class="fa-solid fa-paperclip"></i>
                         <span class="max-w-[120px] truncate">${escapeHtml(task.fileName)}</span>
                         <i class="fa-solid fa-download text-[9px]"></i>
@@ -458,24 +701,33 @@
             const now = new Date();
             const overdue = tasks.filter(t => !t.completed && new Date(t.end) < now).length;
 
-            document.getElementById('stat-total').innerText = total;
-            document.getElementById('stat-pending').innerText = pending;
-            document.getElementById('stat-completed').innerText = completed;
-            document.getElementById('stat-overdue').innerText = overdue;
+            const statTotal = document.getElementById('stat-total');
+            const statPending = document.getElementById('stat-pending');
+            const statCompleted = document.getElementById('stat-completed');
+            const statOverdue = document.getElementById('stat-overdue');
+            const progressPercentage = document.getElementById('progress-percentage');
+            const progressBar = document.getElementById('progress-bar');
+            const motivationText = document.getElementById('dynamic-motivation-text');
+
+            if (statTotal) statTotal.innerText = total;
+            if (statPending) statPending.innerText = pending;
+            if (statCompleted) statCompleted.innerText = completed;
+            if (statOverdue) statOverdue.innerText = overdue;
 
             const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-            document.getElementById('progress-percentage').innerText = `${percentage}%`;
-            document.getElementById('progress-bar').style.width = `${percentage}%`;
+            if (progressPercentage) progressPercentage.innerText = `${percentage}%`;
+            if (progressBar) progressBar.style.width = `${percentage}%`;
 
-            const motivationText = document.getElementById('dynamic-motivation-text');
-            if (percentage === 100 && total > 0) {
-                motivationText.innerText = "أنت خارق! أنجزت كافة مهامك الدراسية بنجاح تام، استمتع بوقت فراغك بجدارة! 🏆";
-            } else if (percentage >= 50) {
-                motivationText.innerText = "أداء رائع ومتميز! أنت في منتصف الطريق نحو تحقيق أهدافك الأكاديمية لهذا الأسبوع 🌟";
-            } else if (total > 0) {
-                motivationText.innerText = "البداية القوية تصنع الفارق. نظم وقتك وتابع إنجاز مهامك أولاً بأول 📚";
-            } else {
-                motivationText.innerText = "أنجز مهامك الدراسية أولاً بأول لتحقق أعلى الدرجات!";
+            if (motivationText) {
+                if (percentage === 100 && total > 0) {
+                    motivationText.innerText = "أنت خارق! أنجزت كافة مهامك الدراسية بنجاح تام، استمتع بوقت فراغك بجدارة! 🏆";
+                } else if (percentage >= 50) {
+                    motivationText.innerText = "أداء رائع ومتميز! أنت في منتصف الطريق نحو تحقيق أهدافك الأكاديمية لهذا الأسبوع 🌟";
+                } else if (total > 0) {
+                    motivationText.innerText = "البداية القوية تصنع الفارق. نظم وقتك وتابع إنجاز مهامك أولاً بأول 📚";
+                } else {
+                    motivationText.innerText = "أنجز مهامك الدراسية أولاً بأول لتحقق أعلى الدرجات!";
+                }
             }
         }
 
@@ -516,6 +768,8 @@
             const messageEl = document.getElementById('toast-message');
             const iconEl = document.getElementById('toast-icon');
 
+            if (!toast || !messageEl || !iconEl) return;
+
             messageEl.innerText = message;
             if (type === 'error') {
                 toast.className = 'fixed bottom-5 left-5 z-50 transform translate-y-0 opacity-100 transition-all duration-300 bg-rose-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold';
@@ -531,6 +785,7 @@
         }
 
         function escapeHtml(text) {
+            if (!text) return '';
             const map = {
                 '&': '&amp;',
                 '<': '&lt;',
