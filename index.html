@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظم المهام الجامعية الذكي</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Cairo', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts - Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(107, 114, 128, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300 flex flex-col justify-between">
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 left-5 z-50 transform translate-y-32 opacity-0 transition-all duration-300 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-lg"></i>
+        <span id="toast-message">تمت العملية بنجاح!</span>
+    </div>
+
+    <!-- Startup Motivation Modal / Banner -->
+    <div id="startup-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl transform transition-transform duration-300 scale-95 animate-pulse-once text-center relative overflow-hidden">
+            <div class="absolute top-0 right-0 left-0 h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+            <div class="w-16 h-16 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl shadow-inner">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <span class="inline-block px-3 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-xs font-bold rounded-full mb-3">نصيحة إدارية وتحفيزية</span>
+            <h3 id="startup-quote-title" class="text-xl font-bold mb-2">أهلاً بك يا بطل المستقبل!</h3>
+            <p id="startup-quote-text" class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6">"إدارة الوقت هي مفتاح التفوق الأكاديمي. ابدأ بالمهام الصعبة أولاً واجعل النجاح عادَة."</p>
+            <button onclick="closeStartupModal()" class="w-full py-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5">
+                ابدأ يومك الدراسي بنشاط <i class="fa-solid fa-arrow-left mr-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-book-open-reader text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">منظم المهام الجامعية</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">إدارة الأوقات والمهام الدراسية بكل احترافية</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <!-- Theme Toggle Button -->
+                <button onclick="toggleTheme()" class="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm">
+                    <i id="theme-icon" class="fa-solid fa-moon"></i>
+                </button>
+                <!-- Add Task Quick Button -->
+                <button onclick="openTaskModal()" class="hidden sm:flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-2xl font-bold text-sm shadow-lg shadow-indigo-500/25 transition-all transform hover:-translate-y-0.5">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>مهمة جديدة</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 py-8">
+        
+        <!-- Statistics & Motivation Banner Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Stats Cards -->
+            <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-indigo-600 dark:text-indigo-400 mb-2">
+                        <span class="text-xs font-bold text-slate-400">إجمالي المهام</span>
+                        <i class="fa-solid fa-list-check p-2 bg-indigo-50 dark:bg-indigo-950/50 rounded-xl"></i>
+                    </div>
+                    <span id="stat-total" class="text-2xl font-black">0</span>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-amber-500 mb-2">
+                        <span class="text-xs font-bold text-slate-400">قيد التنفيذ</span>
+                        <i class="fa-solid fa-clock-rotate-left p-2 bg-amber-50 dark:bg-amber-950/50 rounded-xl"></i>
+                    </div>
+                    <span id="stat-pending" class="text-2xl font-black">0</span>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-emerald-500 mb-2">
+                        <span class="text-xs font-bold text-slate-400">المكتملة</span>
+                        <i class="fa-solid fa-circle-check p-2 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl"></i>
+                    </div>
+                    <span id="stat-completed" class="text-2xl font-black">0</span>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-rose-500 mb-2">
+                        <span class="text-xs font-bold text-slate-400">متأخرة</span>
+                        <i class="fa-solid fa-triangle-exclamation p-2 bg-rose-50 dark:bg-rose-950/50 rounded-xl"></i>
+                    </div>
+                    <span id="stat-overdue" class="text-2xl font-black">0</span>
+                </div>
+            </div>
+
+            <!-- Dynamic Motivation / Progress Card -->
+            <div class="bg-gradient-to-br from-indigo-600 to-violet-700 text-white p-6 rounded-3xl shadow-xl shadow-indigo-500/20 flex flex-col justify-between relative overflow-hidden">
+                <div class="absolute -left-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-3 py-1 bg-white/20 rounded-full text-xs font-bold backdrop-blur-md">حالة الإنجاز اليوم</span>
+                        <i class="fa-solid fa-award text-xl"></i>
+                    </div>
+                    <p id="dynamic-motivation-text" class="text-sm font-semibold leading-relaxed mb-4">أنجز مهامك الدراسية أولاً بأول لتحقق أعلى الدرجات!</p>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs font-bold mb-1.5 opacity-90">
+                        <span>نسبة الإنجاز الإجمالية</span>
+                        <span id="progress-percentage">0%</span>
+                    </div>
+                    <div class="w-full bg-black/20 rounded-full h-2.5 overflow-hidden">
+                        <div id="progress-bar" class="bg-white h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter and Search Bar -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+            <div class="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0">
+                <button onclick="setFilter('all')" id="filter-all" class="px-5 py-2.5 rounded-2xl font-bold text-xs transition-all bg-indigo-600 text-white shadow-md shadow-indigo-500/20 whitespace-nowrap">الكل</button>
+                <button onclick="setFilter('pending')" id="filter-pending" class="px-5 py-2.5 rounded-2xl font-bold text-xs transition-all bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap">قيد التنفيذ</button>
+                <button onclick="setFilter('completed')" id="filter-completed" class="px-5 py-2.5 rounded-2xl font-bold text-xs transition-all bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap">المكتملة</button>
+                <button onclick="setFilter('urgent')" id="filter-urgent" class="px-5 py-2.5 rounded-2xl font-bold text-xs transition-all bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap">عالية الأهمية</button>
+            </div>
+            
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <div class="relative w-full sm:w-64">
+                    <i class="fa-solid fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" id="search-input" oninput="renderTasks()" placeholder="بحث في المهام أو المساقات..." class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-2.5 pr-11 pl-4 text-xs font-semibold focus:outline-none focus:border-indigo-500 transition-all shadow-sm">
+                </div>
+                <button onclick="openTaskModal()" class="sm:hidden bg-indigo-600 text-white w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tasks Container Grid -->
+        <div id="tasks-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Dynamic Tasks will be injected here -->
+        </div>
+
+        <!-- Empty State (Hidden by default) -->
+        <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-center">
+            <div class="w-20 h-20 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-500 rounded-3xl flex items-center justify-center text-3xl mb-4 shadow-inner">
+                <i class="fa-solid fa-clipboard-list"></i>
+            </div>
+            <h3 class="text-lg font-bold mb-1">لا توجد مهام دراسية حالياً</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-xs max-w-sm mb-6">ابدأ بإضافة مهامك الجامعية وواجباتك ومواعيد اختباراتك لتنظيم وقتك بفاعلية.</p>
+            <button onclick="openTaskModal()" class="px-6 py-3 bg-indigo-600 text-white font-bold text-xs rounded-2xl shadow-lg shadow-indigo-500/25">أضف مهمتك الأولى الآن</button>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 mt-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-4">
+            <p>© 2026 منظم المهام الجامعية الذكي - جميع الحقوق محفوظة</p>
+            <div class="flex items-center gap-4">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-emerald-500 text-[8px]"></i> النظام يعمل بكفاءة</span>
+                <button onclick="resetData()" class="hover:text-rose-500 transition-colors">إعادة ضبط البيانات</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Add/Edit Task Modal -->
+    <div id="task-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 transition-all duration-300">
+        <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-100 dark:border-slate-800">
+                <h3 id="modal-title" class="text-lg font-bold">إضافة مهمة دراسية جديدة</h3>
+                <button onclick="closeTaskModal()" class="w-9 h-9 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="task-form" onsubmit="saveTask(event)" class="space-y-4">
+                <input type="hidden" id="task-id">
+                
+                <div>
+                    <label class="block text-xs font-bold mb-2 text-slate-600 dark:text-slate-400">عنوان المهمة / الواجب / الاختبار</label>
+                    <input type="text" id="task-title" required placeholder="مثال: تسليم مشروع مادة الخوارزميات" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-xs font-semibold focus:outline-none focus:border-indigo-500 transition-all">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold mb-2 text-slate-600 dark:text-slate-400">المساق الدراسي</label>
+                        <input type="text" id="task-subject" required placeholder="مثال: هندسة برمجيات" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-xs font-semibold focus:outline-none focus:border-indigo-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-2 text-slate-600 dark:text-slate-400">مستوى الأهمية</label>
+                        <select id="task-priority" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-xs font-semibold focus:outline-none focus:border-indigo-500 transition-all">
+                            <option value="normal">عادية</option>
+                            <option value="important">مهمة</option>
+                            <option value="urgent">عالية الأهمية (عاجلة)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold mb-2 text-slate-600 dark:text-slate-400">تاريخ ووقت البدء</label>
+                        <input type="datetime-local" id="task-start" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-xs font-semibold focus:outline-none focus:border-indigo-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-2 text-slate-600 dark:text-slate-400">تاريخ ووقت النهاية (الموعد النهائي)</label>
+                        <input type="datetime-local" id="task-end" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-xs font-semibold focus:outline-none focus:border-indigo-500 transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold mb-2 text-slate-600 dark:text-slate-400">ملاحظات أو تفاصيل إضافية</label>
+                    <textarea id="task-notes" rows="3" placeholder="أضف تفاصيل المادة، المراجع المطلوبة، أو خطوات التنفيذ..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-xs font-semibold focus:outline-none focus:border-indigo-500 transition-all resize-none"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="closeTaskModal()" class="px-5 py-3 rounded-2xl font-bold text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">إلغاء</button>
+                    <button type="submit" class="px-6 py-3 rounded-2xl font-bold text-xs bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25 transition-all">حفظ المهمة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Core -->
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('uni_tasks')) || [
+            {
+                id: '1',
+                title: 'تسليم مشروع نظم التشغيل',
+                subject: 'نظم تشغيل متقدمة',
+                priority: 'urgent',
+                start: '2026-06-01T08:00',
+                end: '2026-06-08T23:59',
+                notes: 'إعداد تقرير المشروع البرمجي ورفع الملفات على منصة الجامعة.',
+                completed: false
+            },
+            {
+                id: '2',
+                title: 'مراجعة محاضرة الشبكات',
+                subject: 'شبكات الحاسوب',
+                priority: 'important',
+                start: '2026-06-05T10:00',
+                end: '2026-06-06T12:00',
+                notes: 'التركيز على طبقات OSI والبروتوكولات TCP/IP.',
+                completed: true
+            }
+        ];
+
+        let currentFilter = 'all';
+
+        const startupQuotes = [
+            {
+                title: "طاقة إيجابية لتبدأ يومك الجامعي!",
+                text: "تنظيم وقتك الجامعي اليوم يعني استثماراً حقيقياً في مستقبلك المهني. لا تؤجل عمل اليوم إلى الغد!"
+            },
+            {
+                title: "سر النجاح الأكاديمي!",
+                text: "النجاح ليس صدفة، بل هو ثمرة التخطيط المستمر، والمتابعة الدقيقة، والتغلب على التسويف."
+            },
+            {
+                title: "إضاءة إدارية لليوم!",
+                text: "قسم مهامك الكبيرة إلى أجزاء صغيرة يسهل إنجازها، واجعل لكل دقيقة وزناً في جدولك الدراسي."
+            },
+            {
+                title: "همة حتى القمة!",
+                text: "كل خطوة تخطوها اليوم في دراستك تقربك خطوة إضافية نحو حلمك. استعن بالله وابدأ!"
+            }
+        ];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initStartupQuote();
+            renderTasks();
+            updateStats();
+            checkReminders();
+            // Check reminders every 60 seconds
+            setInterval(checkReminders, 60000);
+        });
+
+        function initStartupQuote() {
+            const randomQuote = startupQuotes[Math.floor(Math.random() * startupQuotes.length)];
+            document.getElementById('startup-quote-title').innerText = randomQuote.title;
+            document.getElementById('startup-quote-text').innerText = `"${randomQuote.text}"`;
+        }
+
+        function closeStartupModal() {
+            const modal = document.getElementById('startup-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                icon.className = 'fa-solid fa-moon';
+                localStorage.setItem('uni_theme', 'light');
+            } else {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                icon.className = 'fa-solid fa-sun';
+                localStorage.setItem('uni_theme', 'dark');
+            }
+        }
+
+        // Load saved theme
+        if (localStorage.getItem('uni_theme') === 'dark' || (!localStorage.getItem('uni_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.getElementById('theme-icon').className = 'fa-solid fa-sun';
+        }
+
+        function openTaskModal(taskId = null) {
+            const modal = document.getElementById('task-modal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+            
+            if (taskId) {
+                document.getElementById('modal-title').innerText = 'تعديل المهمة الدراسية';
+                const task = tasks.find(t => t.id === taskId);
+                if (task) {
+                    document.getElementById('task-id').value = task.id;
+                    document.getElementById('task-title').value = task.title;
+                    document.getElementById('task-subject').value = task.subject;
+                    document.getElementById('task-priority').value = task.priority;
+                    document.getElementById('task-start').value = task.start;
+                    document.getElementById('task-end').value = task.end;
+                    document.getElementById('task-notes').value = task.notes || '';
+                }
+            } else {
+                document.getElementById('modal-title').innerText = 'إضافة مهمة دراسية جديدة';
+                document.getElementById('task-form').reset();
+                document.getElementById('task-id').value = '';
+                // Default start date now
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                document.getElementById('task-start').value = now.toISOString().slice(0,16);
+            }
+        }
+
+        function closeTaskModal() {
+            const modal = document.getElementById('task-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        function saveTask(e) {
+            e.preventDefault();
+            const id = document.getElementById('task-id').value;
+            const title = document.getElementById('task-title').value;
+            const subject = document.getElementById('task-subject').value;
+            const priority = document.getElementById('task-priority').value;
+            const start = document.getElementById('task-start').value;
+            const end = document.getElementById('task-end').value;
+            const notes = document.getElementById('task-notes').value;
+
+            if (new Date(end) <= new Date(start)) {
+                showToast('تاريخ النهاية يجب أن يكون بعد تاريخ البدء!', 'error');
+                return;
+            }
+
+            if (id) {
+                // Update
+                tasks = tasks.map(t => t.id === id ? { ...t, title, subject, priority, start, end, notes } : t);
+                showToast('تم تحديث المهمة بنجاح');
+            } else {
+                // Create
+                const newTask = {
+                    id: Date.now().toString(),
+                    title,
+                    subject,
+                    priority,
+                    start,
+                    end,
+                    notes,
+                    completed: false
+                };
+                tasks.push(newTask);
+                showToast('تمت إضافة المهمة بنجاح');
+            }
+
+            saveAndRefresh();
+            closeTaskModal();
+        }
+
+        function deleteTask(id) {
+            if (confirm('هل أنت متأكد من حذف هذه المهمة الدراسية؟')) {
+                tasks = tasks.filter(t => t.id !== id);
+                showToast('تم حذف المهمة بنجاح');
+                saveAndRefresh();
+            }
+        }
+
+        function toggleComplete(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                if (task.completed) {
+                    showCompletionMotivation();
+                }
+                saveAndRefresh();
+            }
+        }
+
+        function saveAndRefresh() {
+            localStorage.setItem('uni_tasks', JSON.stringify(tasks));
+            renderTasks();
+            updateStats();
+        }
+
+        function resetData() {
+            if (confirm('هل تريد فعلاً إعادة ضبط جميع البيانات والمهام؟')) {
+                localStorage.removeItem('uni_tasks');
+                tasks = [];
+                saveAndRefresh();
+                showToast('تمت إعادة ضبط البيانات بنجاح');
+            }
+        }
+
+        const completionMotivations = [
+            "رائع جداً! خطوة ممتازة نحو التفوق الجامعي 🌟",
+            "عاش! إنجاز عظيم يقرّبك من مرتبة الشرف 🎓",
+            "أنت بطل! تم إنجاز المهمة بكفاءة عالية 💪",
+            "استمر بهذا الأداء المذهل، مستقبلك مشرق ✨",
+            "إنجاز يضاف إلى سجلك الأكاديمي المتميز 🚀"
+        ];
+
+        function showCompletionMotivation() {
+            const msg = completionMotivations[Math.floor(Math.random() * completionMotivations.length)];
+            showToast(msg, 'success');
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            ['all', 'pending', 'completed', 'urgent'].forEach(f => {
+                const btn = document.getElementById(`filter-${f}`);
+                if (f === filter) {
+                    btn.className = 'px-5 py-2.5 rounded-2xl font-bold text-xs transition-all bg-indigo-600 text-white shadow-md shadow-indigo-500/20 whitespace-nowrap';
+                } else {
+                    btn.className = 'px-5 py-2.5 rounded-2xl font-bold text-xs transition-all bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap';
+                }
+            });
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('tasks-container');
+            const emptyState = document.getElementById('empty-state');
+            const searchQuery = document.getElementById('search-input').value.toLowerCase();
+
+            let filtered = tasks.filter(t => {
+                const matchesSearch = t.title.toLowerCase().includes(searchQuery) || t.subject.toLowerCase().includes(searchQuery);
+                if (!matchesSearch) return false;
+
+                if (currentFilter === 'pending') return !t.completed;
+                if (currentFilter === 'completed') return t.completed;
+                if (currentFilter === 'urgent') return t.priority === 'urgent' && !t.completed;
+                return true;
+            });
+
+            // Sort: uncompleted first, then by end date
+            filtered.sort((a, b) => {
+                if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                return new Date(a.end) - new Date(b.end);
+            });
+
+            container.innerHTML = '';
+
+            if (filtered.length === 0) {
+                emptyState.style.display = 'flex';
+                return;
+            } else {
+                emptyState.style.display = 'none';
+            }
+
+            const now = new Date();
+
+            filtered.forEach(task => {
+                const endDate = new Date(task.end);
+                const startDate = new Date(task.start);
+                const isOverdue = !task.completed && endDate < now;
+                const timeRemaining = formatTimeRemaining(endDate, now, task.completed);
+
+                let priorityBadge = '';
+                if (task.priority === 'urgent') {
+                    priorityBadge = '<span class="px-2.5 py-1 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 text-[10px] font-bold rounded-full">عاجلة</span>';
+                } else if (task.priority === 'important') {
+                    priorityBadge = '<span class="px-2.5 py-1 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 text-[10px] font-bold rounded-full">مهمة</span>';
+                } else {
+                    priorityBadge = '<span class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold rounded-full">عادية</span>';
+                }
+
+                const card = document.createElement('div');
+                card.className = `bg-white dark:bg-slate-900 border rounded-3xl p-6 shadow-sm flex flex-col justify-between transition-all hover:shadow-md relative overflow-hidden ${task.completed ? 'opacity-75 border-emerald-500/30 bg-emerald-50/10' : isOverdue ? 'border-rose-500/50' : 'border-slate-100 dark:border-slate-800'}`;
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-start justify-between gap-3 mb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="px-3 py-1 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 text-xs font-bold rounded-xl">${escapeHtml(task.subject)}</span>
+                                ${priorityBadge}
+                            </div>
+                            <button onclick="toggleComplete('${task.id}')" class="w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${task.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 dark:border-slate-700 hover:border-indigo-500'}">
+                                ${task.completed ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
+                            </button>
+                        </div>
+
+                        <h4 class="text-base font-bold mb-2 ${task.completed ? 'line-through text-slate-400 dark:text-slate-500' : ''}">${escapeHtml(task.title)}</h4>
+                        
+                        ${task.notes ? `<p class="text-xs text-slate-500 dark:text-slate-400 mb-4 line-clamp-2">${escapeHtml(task.notes)}</p>` : '<div class="mb-4"></div>'}
+                    </div>
+
+                    <div>
+                        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-3 mb-4 space-y-1.5 text-xs">
+                            <div class="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                                <span class="flex items-center gap-1.5"><i class="fa-regular fa-calendar-days"></i> البداية:</span>
+                                <span class="font-semibold text-slate-700 dark:text-slate-300">${formatDate(startDate)}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                                <span class="flex items-center gap-1.5"><i class="fa-regular fa-clock"></i> النهاية:</span>
+                                <span class="font-semibold ${isOverdue ? 'text-rose-500 font-bold' : 'text-slate-700 dark:text-slate-300'}">${formatDate(endDate)}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+                            <span class="text-[11px] font-bold ${task.completed ? 'text-emerald-500' : isOverdue ? 'text-rose-500 font-bold' : 'text-indigo-500'}">
+                                <i class="fa-solid fa-hourglass-half ml-1"></i> ${timeRemaining}
+                            </span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="openTaskModal('${task.id}')" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+                                    <i class="fa-solid fa-pen text-xs"></i>
+                                </button>
+                                <button onclick="deleteTask('${task.id}')" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+                                    <i class="fa-solid fa-trash text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updateStats() {
+            const total = tasks.length;
+            const completed = tasks.filter(t => t.completed).length;
+            const pending = total - completed;
+            const now = new Date();
+            const overdue = tasks.filter(t => !t.completed && new Date(t.end) < now).length;
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-pending').innerText = pending;
+            document.getElementById('stat-completed').innerText = completed;
+            document.getElementById('stat-overdue').innerText = overdue;
+
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+            document.getElementById('progress-percentage').innerText = `${percentage}%`;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+
+            const motivationText = document.getElementById('dynamic-motivation-text');
+            if (percentage === 100 && total > 0) {
+                motivationText.innerText = "أنت خارق! أنجزت كافة مهامك الدراسية بنجاح تام، استمتع بوقت فراغك بجدارة! 🏆";
+            } else if (percentage >= 50) {
+                motivationText.innerText = "أداء رائع ومتميز! أنت في منتصف الطريق نحو تحقيق أهدافك الأكاديمية لهذا الأسبوع 🌟";
+            } else if (total > 0) {
+                motivationText.innerText = "البداية القوية تصنع الفارق. نظم وقتك وتابع إنجاز مهامك أولاً بأول 📚";
+            } else {
+                motivationText.innerText = "أنجز مهامك الدراسية أولاً بأول لتحقق أعلى الدرجات!";
+            }
+        }
+
+        function formatDate(date) {
+            const options = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return date.toLocaleDateString('ar-SA', options);
+        }
+
+        function formatTimeRemaining(endDate, now, completed) {
+            if (completed) return 'مكتملة';
+            const diff = endDate - now;
+            if (diff < 0) return 'متأخرة عن الموعد!';
+            
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) return `متبقي ${days} يوم و ${hours % 24} ساعة`;
+            if (hours > 0) return `متبقي ${hours} ساعة`;
+            const minutes = Math.floor(diff / (1000 * 60));
+            return `متبقي ${minutes} دقيقة`;
+        }
+
+        function checkReminders() {
+            const now = new Date();
+            tasks.forEach(task => {
+                if (!task.completed) {
+                    const endDate = new Date(task.end);
+                    const diffMinutes = Math.floor((endDate - now) / (1000 * 60));
+                    // Alert if task is due in roughly 30 minutes and hasn't been recently notified
+                    if (diffMinutes === 30) {
+                        showToast(`تنبيه: اقترب موعد تسليم المهمة "${task.title}" خلال 30 دقيقة!`, 'error');
+                    }
+                }
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const messageEl = document.getElementById('toast-message');
+            const iconEl = document.getElementById('toast-icon');
+
+            messageEl.innerText = message;
+            if (type === 'error') {
+                toast.className = 'fixed bottom-5 left-5 z-50 transform translate-y-0 opacity-100 transition-all duration-300 bg-rose-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold';
+                iconEl.className = 'fa-solid fa-triangle-exclamation text-lg';
+            } else {
+                toast.className = 'fixed bottom-5 left-5 z-50 transform translate-y-0 opacity-100 transition-all duration-300 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold';
+                iconEl.className = 'fa-solid fa-circle-check text-lg';
+            }
+
+            setTimeout(() => {
+                toast.className = 'fixed bottom-5 left-5 z-50 transform translate-y-32 opacity-0 transition-all duration-300 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold';
+            }, 4000);
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+    </script>
+</body>
+</html>
