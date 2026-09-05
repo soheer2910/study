@@ -42,7 +42,6 @@
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300 flex flex-col">
 
-    <!-- Startup Motivation Modal -->
     <div id="startup-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300">
         <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl text-center relative overflow-hidden">
             <div class="absolute -top-12 -left-12 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
@@ -62,13 +61,11 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-5 left-5 z-50 transform translate-y-32 opacity-0 transition-all duration-300 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold">
         <i id="toast-icon" class="fa-solid fa-circle-check text-lg"></i>
         <span id="toast-message">تمت العملية بنجاح</span>
     </div>
 
-    <!-- Header Navigation -->
     <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -96,7 +93,6 @@
         </div>
     </header>
 
-    <!-- Main Application Body -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
         
         <!-- Dashboard Statistics Cards -->
@@ -142,7 +138,6 @@
             </div>
         </div>
 
-        <!-- Progress Overview & Dynamic Motivation Banner -->
         <div class="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-500/10 relative overflow-hidden">
             <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
             
@@ -165,7 +160,6 @@
             </div>
         </div>
 
-        <!-- Filters & Search Toolbar -->
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0">
                 <button onclick="setFilter('all')" id="filter-all" class="px-5 py-2.5 rounded-2xl font-bold text-xs transition-all bg-indigo-600 text-white shadow-md shadow-indigo-500/20 whitespace-nowrap">الكل</button>
@@ -180,12 +174,10 @@
             </div>
         </div>
 
-        <!-- Tasks Grid -->
         <div id="tasks-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Dynamically rendered tasks will appear here -->
         </div>
 
-        <!-- Empty State -->
         <div id="empty-state" class="hidden flex-col items-center justify-center py-16 px-4 text-center bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl">
             <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-2xl flex items-center justify-center text-2xl mb-4">
                 <i class="fa-solid fa-folder-open"></i>
@@ -197,12 +189,10 @@
 
     </main>
 
-    <!-- Footer -->
     <footer class="mt-auto border-t border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
         <p>منظم المهام الجامعية الذكي © 2026 - جميع الحقوق محفوظة لطلبة الجامعات الطموحين 🎓</p>
     </footer>
 
-    <!-- Add/Edit Task Modal -->
     <div id="task-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 transition-all duration-300">
         <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-100 dark:border-slate-800">
@@ -273,7 +263,6 @@
         </div>
     </div>
 
-    <!-- JavaScript Application Core -->
     <script>
         let tasks = JSON.parse(localStorage.getItem('uni_tasks')) || [
             {
